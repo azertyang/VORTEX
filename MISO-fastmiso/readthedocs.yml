@@ -1,6 +1,0 @@
-name: miso
-type: sphinx
-conda:
-    file: docs/environment.yml
-python:
-  version: 2.7
