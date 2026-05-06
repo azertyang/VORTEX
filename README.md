@@ -15,7 +15,7 @@
 ---
 **Parameter-efficient fine-tuning (PEFT) of Nicheformer** ([Tejada-Lapuerta, Schaar et al., Nature Methods 2025](https://doi.org/10.1038/s41592-025-02814-z)) **using LoRA** [(Hu et al., 2022)](https://doi.org/10.48550/arXiv.2106.09685) **for cell-type classification in spatial transcriptomics, featuring a cross-technology generalization study (CosMx → MERFISH)**.
 
-Convex work available at this [github direction](https://github.com/nnayz/ft-nicheformer), which used federated learning framework to fine-tuned Nicheformer on spatial single-cell transcriptomics data, originating from mouse brain.
+Related work available at this [github direction](https://github.com/nnayz/ft-nicheformer), which used federated learning framework to fine-tuned Nicheformer on spatial single-cell transcriptomics data, originating from mouse brain.
 
 
 ### Context
@@ -112,6 +112,7 @@ bash scripts/setup_ubelix_env.sh    # Creates nicheformer_env (~5–10 min)
 The authors distribute weights on Mendeley Data. Download these files locally and scp them to data/pretrained/:
 
 [model.h5ad, cosmx_mean_script.npy, merfish_mean_script.npy](https://github.com/theislab/nicheformer/tree/main/data/model_means), [nicheformer.ckpt](https://data.mendeley.com/preview/87gm9hrgm8?a=d95a6dde-e054-4245-a7eb-0522d6ea7dff).
+If Mendeley link is broken, contact authors directly.
 
 
 
@@ -131,7 +132,7 @@ More details on [squidpy](https://squidpy.readthedocs.io/en/stable/), python pac
 #### 4. Prepare Datasets
 
 ```
-conda activate nicheformer_env
+conda activate nicheformer
 python scripts/prepare_data.py --config configs/data_prep.yaml
 ```
 
@@ -160,7 +161,7 @@ Parameter	Default	Justification
 - lr	5e-4	Higher than full-FT due to fewer parameters
 - precision	16-mixed	Halves activation memory 
 
-### Expected Results
+### Expected Results - revoir
 In-domain (CosMx test): F1 macro > 0.80 (linear probing reaches ~0.75).
 
 Cross-tech (MERFISH): Expected drop of 15–30 F1 points. The scientific question: Does LoRA help generalization or does it over-specialize the model?
