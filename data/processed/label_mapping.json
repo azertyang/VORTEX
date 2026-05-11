@@ -1,0 +1,10 @@
+{
+  "Astrocyte": 0,
+  "Excitatory": 1,
+  "Inhibitory": 2,
+  "Oligodendrocyte": 3,
+  "Microglia": 4,
+  "Vascular": 5,
+  "Ependymal": 6,
+  "Other": 7
+}
