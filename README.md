@@ -3,6 +3,9 @@
 > Project for the Deep Learning course — University of Bern. Presentation date: May 11, 2026.
 
 ---
+**Parameter-efficient fine-tuning (PEFT) of Nicheformer** ([Tejada-Lapuerta, Schaar et al., Nature Methods 2025](https://doi.org/10.1038/s41592-025-02814-z)) **using LoRA** [(Hu et al., 2022)](https://doi.org/10.48550/arXiv.2106.09685) **for cell-type classification in spatial transcriptomics, featuring a cross-technology generalization study (CosMx → MERFISH)**.
+
+---
  
 ## Team
  
@@ -13,17 +16,11 @@
 *University of Bern — Deep Learning Course 2026*
 
 ---
-**Parameter-efficient fine-tuning (PEFT) of Nicheformer** ([Tejada-Lapuerta, Schaar et al., Nature Methods 2025](https://doi.org/10.1038/s41592-025-02814-z)) **using LoRA** [(Hu et al., 2022)](https://doi.org/10.48550/arXiv.2106.09685) **for cell-type classification in spatial transcriptomics, featuring a cross-technology generalization study (CosMx → MERFISH)**.
-
-Related work available at this [github direction](https://github.com/nnayz/ft-nicheformer), which used federated learning framework to fine-tuned Nicheformer on spatial single-cell transcriptomics data, originating from mouse brain.
-
 
 ### Context
-The initial evaluation feedback pointed out a weakness in the "linear probing" version of the project:
+The first version of this project followed a linear probing setup: a logistic regression was trained on top of frozen Nicheformer embeddings. The course feedback flagged this as a weakness. 
 
-"Pure linear probing — no gradient updates to any neural network during the project. The 'DL' work is borrowed entirely from Nicheformer; your team only trains logistic regression on top."
-
-This repository solves that issue. We add real trainable parameters inside the transformer (LoRA adapters) while staying within the computational constraints (single GPU, no pre-training from scratch). The 90M+ parameter backbone remains frozen; we only train ~0.3% of the weights.
+This repository addresses that. We add real trainable parameters inside the transformer — LoRA adapters injected into every attention layer — while staying within the constraints (single GPU, no full pre-training, no end-to-end fine-tuning of the 90M+ parameter backbone). Only ~1.3% of weights are trained.
 
 ### Architecture
 
@@ -49,10 +46,36 @@ This repository solves that issue. We add real trainable parameters inside the t
                                    │ -Linear         │
                                    └─────────────────┘
                                              │
-                                     logits over N types
+                                     logits over 8 cell types
 ```
 
-According to LoRA (Hu et al. 2022): For each attention projection W, we learn two low-dimension matrices A∈R r×d and B∈R d×r with r≪d. We replace W⋅x with (W+ r/α BA)⋅x. At initialization, B=0, so the model behaves exactly like the pre-trained version.
+According to LoRA (Hu et al. 2022): 
+For each attention projection W, we learn two low-rank matrices A∈R (r×d) and B∈R(d×r) with r≪d. The forward becomes:
+W' x = W⋅x with (W+ r/α BA)⋅x
+At initialization, B=0, so the model behaves exactly like the pre-trained version. Only A and B are updated.
+
+## Unified label space (8 classes):
+
+CosMx provides 49 subtypes, e.g., Excitatory.neurons.layer.4, MERFISH provides 16 broader classes. To make cross-technology comparison meaningful, we map both to 8 major cell types:
+
+| Class | CosMx subtypes (49 → 8) | MERFISH (16 → 8) |
+|---|---|---|
+| Astrocyte | 2 subtypes | `Astrocyte` |
+| Excitatory | 20 subtypes | `Excitatory` |
+| Inhibitory | 10 subtypes | `Inhibitory` |
+| Oligodendrocyte | 5 subtypes | `OD Mature/Immature 1-4` |
+| Microglia | `Microglia`, `Perivascular.macrophages`, `T.cell` | `Microglia` |
+| Vascular | `Pericytes`, `Endothelial`, `Leptomeningeal`, `Smooth muscle` | `Endothelial 1-3`, `Pericytes` |
+| Ependymal | `Ependymal`, `Hypendymal`, `Tanycytes` | `Ependymal` |
+| Other | `Choroid`, `Neuroblasts`, `Radial.glia` | `Ambiguous` |
+
+## Training tricks
+
+The naive setup falls into a local minimum where the model predicts the majority class (Excitatory, 41% of the CosMx dataset). We adress this with:
+- class-weighted cross-entropy (normalized to mean 1)
+- label smoothing = 0.1 to reduce overconfidence
+- separate learning rates - lr=5e-4 for LoRA pre-trained and lr=5e-3 for the randomly-initialized MLP head
+- fixed macro_F1 ; we count F1=0 for never-predicted classes (instead of skipping them)
 
 ### Repository Structure
 
@@ -60,30 +83,19 @@ According to LoRA (Hu et al. 2022): For each attention projection W, we learn tw
 nicheformer-lora/
 ├── README.md                       ← You are here
 ├── requirements.txt
-├── configs/
-│   ├── data_prep.yaml              ← Data prep config
-│   └── train_cosmx.yaml            ← Training config
-├── src/
-│   ├── lora.py                     ← LoRA module (self-contained, ~250 lines)
-│   ├── model.py                    ← LightningModule for FT + classification
-│   └── data.py                     ← Vocab alignment + context tokens + split
+├── LICENSE
 ├── scripts/
-│   ├── setup_ubelix_env.sh         ← Create conda env on Ubelix
-│   ├── prepare_data.py             ← Prepares CosMx + MERFISH
-│   ├── train.py                    ← Training script
-│   ├── evaluate_cross_tech.py      ← Eval CosMx-trained → MERFISH
-│   └── download_pretrained.py      ← Mendeley download helper
+│   └── nicheformer_main.py      
 ├── slurm/
-│   ├── train.slurm                 ← SLURM job for training (GPU)
-│   └── eval_cross_tech.slurm       ← SLURM job for evaluation
-├── notebooks/
-│   └── demo.ipynb                  ← Demo notebook for presentation
-├── tests/
-│   ├── test_lora.py                ← LoRA unit tests (pass in <5s)
-│   └── test_integration.py         ← Integration test on mini-transformer
-└── data/                           ← Gitignored
+│   └── run_nicheformer_main.slurm       
+└── data/                           
     ├── pretrained/                 ← Checkpoints + model.h5ad + means
-    ├── raw/                        ← Raw AnnData CosMx + MERFISH
+    ├── raw/                        ← Raw AnnData CosMx + MERFISH 
+    (empty, available on demand)
+    ├── outputs/                        ← Raw AnnData CosMx + MERFISH
+    |   ├── metrics.csv                
+    |   ├── summary.txt    
+    |   └── figures/                   
     └── processed/                  ← Prepared AnnData
 ```
 ---
@@ -93,9 +105,9 @@ nicheformer-lora/
 
 UniBe account with Ubelix access (ssh <user>@submit.unibe.ch).
 
-Access to the gpu partition.
+Access to the gpu partition (1 GPU, either RTX4090, A100 or H100).
 
-~2 GB free quota in $HOME for the environment + ~5 GB for checkpoints.
+Takes about 1 to 2 hours for 15 epochs
 
 #### 1. Clone and Setup
 
@@ -114,6 +126,10 @@ The authors distribute weights on Mendeley Data. Download these files locally an
 [model.h5ad, cosmx_mean_script.npy, merfish_mean_script.npy](https://github.com/theislab/nicheformer/tree/main/data/model_means), [nicheformer.ckpt](https://data.mendeley.com/preview/87gm9hrgm8?a=d95a6dde-e054-4245-a7eb-0522d6ea7dff).
 If Mendeley link is broken, contact authors directly.
 
+Create the following directory tree:
+- pretrained/nicheformer.ckpt
+- raw/cosmx_mouse_brain.h5ad and raw/merfish_mouse_brain.h5ad
+
 
 
 #### 3. Download Spatial Data
@@ -129,26 +145,33 @@ adata.write_h5ad('data/raw/merfish_mouse_brain.h5ad')
 ```
 More details on [squidpy](https://squidpy.readthedocs.io/en/stable/), python package, [available article linked to this package](https://doi.org/10.1038/s41592-021-01358-2). 
 
-#### 4. Prepare Datasets
+#### 4. Run
 
 ```
 conda activate nicheformer
-python scripts/prepare_data.py --config configs/data_prep.yaml
+python scripts/nicheformer_main.py
 ```
 
-#### 5. Launch GPU Training
+#### 5. Check the outputs
+
+The directory tree must be similar to this one below:
 
 ```
-sbatch slurm/train.slurm
-Monitor progress: tail -f logs/slurm-nicheformer-lora-<JOBID>.out.
-Outputs (checkpoints and LoRA weights) will be saved in outputs/.
-```
-
-#### 6. Cross-Technology Evaluation
-
-```
-sbatch --export=ALL,RUN_DIR=outputs/cosmx_lora_r8_<timestamp> \
-       slurm/eval_cross_tech.slurm
+outputs/
+├── checkpoints/
+│   ├── best-XX-0.YYY.ckpt
+│   └── last.ckpt
+├── logs/version_0/metrics.csv      # full training trace
+├── preds_indomain.npy
+├── labels_indomain.npy
+├── preds_crosstech.npy
+├── labels_crosstech.npy
+├── summary.txt
+└── figures/
+    ├── train_curves.png
+    ├── comparison.png
+    ├── confusion_indomain.png
+    └── confusion_crosstech.png
 ```
 
 ---
@@ -157,11 +180,15 @@ sbatch --export=ALL,RUN_DIR=outputs/cosmx_lora_r8_<timestamp> \
 Parameter	Default	Justification
 - lora_r	8	Good quality/cost trade-off (Hu et al. 2022)
 - lora_alpha	16	Standard 2×r convention
-- lr	5e-4	
-- precision	16-mixed	
+- lora_target_layers all(12)
+- lr (LoRA params)	5e-4	
+- lr (head params)  5e-3
+- warmup_steps 50
+- batch size 16
+- precision	16-mixed (Halves activation memory)
 - weight decay 0.01
 
-### Expected Results
+### Results
 In-domain (CosMx test): F1 macro > 0.80 (linear probing reaches ~0.75).
 
 Cross-tech (MERFISH): Expected drop F1 macro < 0.1 (77.3 points). 
@@ -181,9 +208,23 @@ Distribution of Cross-tech predictions (see also: `data/outputs/run_fix/summary.
 - microglia: 28,375
 - vascular: 16,941
 
+## Discussion
+
+The 77-point F1 drop between CosMx and MERFISH is striking and warrants analysis. Three non-exclusive hypotheses:
+
+1. **Vocabulary mismatch.** MERFISH measures only 161 genes vs CosMx's 950. After alignment to Nicheformer's 20,310-gene vocabulary, the MERFISH input is much sparser, and the per-gene technology-mean normalization shifts the token-rank distribution.
+   
+2. **Annotation taxonomy.** Even after our 8-class harmonization, "Inhibitory" in MERFISH encompasses a different set of subtypes than "Inhibitory" in CosMx. The decision boundary learned on CosMx is too sharp for the coarser MERFISH labels.
+
+3. **LoRA over-specialization.** Hu et al. (2022) observed that LoRA can over-fit to the source domain when the rank is small relative to the domain shift. r = 8 may be too restrictive for cross-technology transfer; higher ranks or zero-shot evaluation could mitigate this.
+
+A natural extension would be a **domain-adversarial head** that explicitly pushes CosMx and MERFISH embeddings into a shared space during training.
+
  
 ---
- 
+## Related work 
+The repository [github direction](https://github.com/nnayz/ft-nicheformer), explores Nicheformer fine-tuning in a federated learning setting. We were aware of it but did not use any of its code; our approach (LoRA + cross-tech evaluation) is independent.
+
 ## References
 - Tejada-Lapuerta, A., Schaar, A.C., Gutgesell, R. et al. Nicheformer: a foundation model for single-cell and spatial omics. Nat Methods 22, 2525–2538 (2025). https://doi.org/10.1038/s41592-025-02814-z
 - Edward J. Hu et al: LoRA: Low-Rank Adaptation of Large Language Models (2021). https://doi.org/10.48550/arXiv.2106.09685
