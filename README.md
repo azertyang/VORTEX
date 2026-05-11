@@ -54,7 +54,7 @@ For each attention projection W, we learn two low-rank matrices A∈R (r×d) and
 W' x = W⋅x with (W+ r/α BA)⋅x
 At initialization, B=0, so the model behaves exactly like the pre-trained version. Only A and B are updated.
 
-## Unified label space (8 classes):
+### Unified label space (8 classes):
 
 CosMx provides 49 subtypes, e.g., Excitatory.neurons.layer.4, MERFISH provides 16 broader classes. To make cross-technology comparison meaningful, we map both to 8 major cell types:
 
@@ -69,7 +69,7 @@ CosMx provides 49 subtypes, e.g., Excitatory.neurons.layer.4, MERFISH provides 1
 | Ependymal | `Ependymal`, `Hypendymal`, `Tanycytes` | `Ependymal` |
 | Other | `Choroid`, `Neuroblasts`, `Radial.glia` | `Ambiguous` |
 
-## Training tricks
+### Training tricks
 
 The naive setup falls into a local minimum where the model predicts the majority class (Excitatory, 41% of the CosMx dataset). We adress this with:
 - class-weighted cross-entropy (normalized to mean 1)
@@ -207,6 +207,8 @@ Distribution of Cross-tech predictions (see also: `data/outputs/run_fix/summary.
 - oligodendrocyte: 28,339
 - microglia: 28,375
 - vascular: 16,941
+  
+--- 
 
 ## Discussion
 
@@ -222,10 +224,10 @@ A natural extension would be a **domain-adversarial head** that explicitly pushe
 
  
 ---
-## Related work 
+### Related work 
 The repository [github direction](https://github.com/nnayz/ft-nicheformer), explores Nicheformer fine-tuning in a federated learning setting. We were aware of it but did not use any of its code; our approach (LoRA + cross-tech evaluation) is independent.
 
-## References
+### References
 - Tejada-Lapuerta, A., Schaar, A.C., Gutgesell, R. et al. Nicheformer: a foundation model for single-cell and spatial omics. Nat Methods 22, 2525–2538 (2025). https://doi.org/10.1038/s41592-025-02814-z
 - Edward J. Hu et al: LoRA: Low-Rank Adaptation of Large Language Models (2021). https://doi.org/10.48550/arXiv.2106.09685
 - He, S., Bhatt, R., Brown, C. et al. High-plex imaging of RNA and proteins at subcellular resolution in fixed tissue by spatial molecular imaging. Nat Biotechnol 40, 1794–1806 (2022). https://doi.org/10.1038/s41587-022-01483-z
