@@ -157,16 +157,29 @@ sbatch --export=ALL,RUN_DIR=outputs/cosmx_lora_r8_<timestamp> \
 Parameter	Default	Justification
 - lora_r	8	Good quality/cost trade-off (Hu et al. 2022)
 - lora_alpha	16	Standard 2×r convention
-- lora_target_layers	All (12)	Max expressivity
-- lr	5e-4	Higher than full-FT due to fewer parameters
-- precision	16-mixed	Halves activation memory 
+- lr	5e-4	
+- precision	16-mixed	
+- weight decay 0.01
 
-### Expected Results - revoir
+### Expected Results
 In-domain (CosMx test): F1 macro > 0.80 (linear probing reaches ~0.75).
 
-Cross-tech (MERFISH): Expected drop of 15–30 F1 points. The scientific question: Does LoRA help generalization or does it over-specialize the model?
+Cross-tech (MERFISH): Expected drop F1 macro < 0.1 (77.3 points). 
 
-Rank Ablation: Repeat training with r∈{2,4,8,16,32} and plot F1 vs r.
+Distribution of In-domain predictions (see also: `data/outputs/run_fix/summary.txt`):
+- astrocyte: 715
+- excitatory: 2,678
+- inhibitory: 1,421
+- oligodendrocyte: 1,046
+- microglia: 229
+- vascular: 700
+- ependymal: 134
+- other: 104
+
+Distribution of Cross-tech predictions (see also: `data/outputs/run_fix/summary.txt`):
+- oligodendrocyte: 28,339
+- microglia: 28,375
+- vascular: 16,941
 
  
 ---
