@@ -226,6 +226,8 @@ A natural extension would be a **domain-adversarial head** that explicitly pushe
 ---
 ### Related work 
 The repository [github direction](https://github.com/nnayz/ft-nicheformer), explores Nicheformer fine-tuning in a federated learning setting. We were aware of it but did not use any of its code; our approach (LoRA + cross-tech evaluation) is independent.
+The most closely related work is the federated fine-tuning repository of [Nasrul Huda](https://github.com/nnayz/ft-nicheformer), which adapts Nicheformer using a federated learning framework. Our approach differs in two respects, we use LoRA instead of full 
+fine-tuning, reducing trainable parameters to under 1.4\% of the backbone, and we explicitly evaluate cross-technology generalisation by transferring zero-shot from CosMx to MERFISH — a scenario not addressed in that work. Our implementation is independent.
 
 ### References
 - Tejada-Lapuerta, A., Schaar, A.C., Gutgesell, R. et al. Nicheformer: a foundation model for single-cell and spatial omics. Nat Methods 22, 2525–2538 (2025). https://doi.org/10.1038/s41592-025-02814-z
