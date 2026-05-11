@@ -86,16 +86,14 @@ nicheformer-lora/
 ├── LICENSE
 ├── scripts/
 │   └── nicheformer_main.py      
-├── slurm/
-│   └── run_nicheformer_main.slurm       
+├── files/  
 └── data/                           
     ├── pretrained/                 ← Checkpoints + model.h5ad + means
-    ├── raw/                        ← Raw AnnData CosMx + MERFISH 
-    (empty, available on demand)
-    ├── outputs/                        ← Raw AnnData CosMx + MERFISH
+    ├── raw/                        ← (empty, available on demand)
+    ├── outputs/                        
     |   ├── metrics.csv                
     |   ├── summary.txt    
-    |   └── figures/                   
+    |   └── figures/                ← Figures 
     └── processed/                  ← Prepared AnnData
 ```
 ---
