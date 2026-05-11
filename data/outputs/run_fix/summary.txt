@@ -1,0 +1,25 @@
+
+==================================================================
+RÉSULTATS — Nicheformer + LoRA (r=8, alpha=16)
+                  AVEC class weights + lr=5e-4
+==================================================================
+
+In-domain  (CosMx test)    : accuracy = 0.8827, F1 macro = 0.8179
+Cross-tech (MERFISH all)   : accuracy = 0.0883, F1 macro = 0.0446
+Drop F1 cross-tech         : 77.3 points
+
+Distribution des prédictions in-domain :
+  Astrocyte          : 715
+  Excitatory         : 2,678
+  Inhibitory         : 1,421
+  Oligodendrocyte    : 1,046
+  Microglia          : 229
+  Vascular           : 700
+  Ependymal          : 134
+  Other              : 104
+
+Distribution des prédictions cross-tech :
+  Oligodendrocyte    : 28,339
+  Microglia          : 28,375
+  Vascular           : 16,941
+==================================================================
