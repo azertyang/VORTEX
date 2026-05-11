@@ -220,7 +220,7 @@ The 77-point F1 drop between CosMx and MERFISH is striking and warrants analysis
 
 3. **LoRA over-specialization.** Hu et al. (2022) observed that LoRA can over-fit to the source domain when the rank is small relative to the domain shift. r = 8 may be too restrictive for cross-technology transfer; higher ranks or zero-shot evaluation could mitigate this.
 
-A natural extension would be a **domain-adversarial head** that explicitly pushes CosMx and MERFISH embeddings into a shared space during training.
+A natural extension would be a **[domain-adversarial head](http://jmlr.org/papers/v17/15-239.html)** that explicitly pushes CosMx and MERFISH embeddings into a shared space during training.
 
  
 ---
@@ -234,4 +234,5 @@ fine-tuning, reducing trainable parameters to under 1.4\% of the backbone, and w
 - He, S., Bhatt, R., Brown, C. et al. High-plex imaging of RNA and proteins at subcellular resolution in fixed tissue by spatial molecular imaging. Nat Biotechnol 40, 1794–1806 (2022). https://doi.org/10.1038/s41587-022-01483-z
 - Zhang, M., Pan, X., Jung, W. et al. Molecularly defined and spatially resolved cell atlas of the whole mouse brain. Nature 624, 343–354 (2023). https://doi.org/10.1038/s41586-023-06808-9
 - Palla, G., Spitzer, H., Klein, M. et al. Squidpy: a scalable framework for spatial omics analysis. Nat Methods 19, 171–178 (2022). https://doi.org/10.1038/s41592-021-01358-2
+- Ganin et al, Domain-adversarial training of neural networks, Journal of Machine Learning Research (JMLR) (2016), http://jmlr.org/papers/v17/15-239.html
  
