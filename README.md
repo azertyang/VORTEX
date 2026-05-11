@@ -3,7 +3,7 @@
 > Project for the Deep Learning course — University of Bern. Presentation date: May 11, 2026.
 
 ---
-**Parameter-efficient fine-tuning (PEFT) of Nicheformer** ([Tejada-Lapuerta, Schaar et al., Nature Methods 2025](https://doi.org/10.1038/s41592-025-02814-z)) **using LoRA** [(Hu et al., 2022)](https://doi.org/10.48550/arXiv.2106.09685) **for cell-type classification in spatial transcriptomics, featuring a cross-technology generalization study (CosMx → MERFISH)**.
+**Parameter-efficient fine-tuning (PEFT) of Nicheformer** ([Tejada-Lapuerta, Schaar et al.,2025](https://doi.org/10.1038/s41592-025-02814-z)) **using LoRA** [(Hu et al., 2022)](https://doi.org/10.48550/arXiv.2106.09685) **for cell-type classification in spatial transcriptomics, featuring a cross-technology generalization study (CosMx → MERFISH)**.
 
 ---
  
@@ -20,7 +20,7 @@
 ### Context
 The first version of this project followed a linear probing setup: a logistic regression was trained on top of frozen Nicheformer embeddings. The course feedback flagged this as a weakness. 
 
-This repository addresses that. We add real trainable parameters inside the transformer — LoRA adapters injected into every attention layer — while staying within the constraints (single GPU, no full pre-training, no end-to-end fine-tuning of the 90M+ parameter backbone). Only ~1.3% of weights are trained.
+This repository addresses that. We add real trainable parameters inside the transformer, LoRA adapters injected into every attention layer, while staying within the constraints (single GPU, no full pre-training, no end-to-end fine-tuning of the 90M+ parameter backbone). Only ~1.3% of weights are trained.
 
 ### Architecture
 
